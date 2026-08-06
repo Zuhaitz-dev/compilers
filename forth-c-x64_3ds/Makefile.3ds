@@ -1,0 +1,48 @@
+ifeq ($(strip $(DEVKITARM)),)
+$(error "Please set DEVKITARM in your environment. export DEVKITARM=/opt/devkitpro/devkitARM")
+endif
+
+include $(DEVKITARM)/3ds_rules
+
+TARGET   := forth_3ds
+BUILD    := build
+
+APP_TITLE  := C23 Forth Workbench
+APP_DESC   := 32-Byte Aligned DTC Compiler
+APP_AUTHOR := Zuhaitz
+ICON       := icon.png
+
+CC       := arm-none-eabi-gcc
+CFLAGS   := -Wall -Wextra -std=gnu23 -O3 -mfloat-abi=hard -mtune=mpcore -mcpu=mpcore -D__3DS__ -Iinclude -I$(CTRULIB)/include
+LDFLAGS  := -specs=3dsx.specs -g -mfloat-abi=hard -mtune=mpcore -mcpu=mpcore -L$(CTRULIB)/lib -lctru
+
+SRCS     := main.c src/core/engine.c src/pal/3ds_pal.c
+OBJS     := $(patsubst %.c,$(BUILD)/%.o,$(SRCS))
+
+.PHONY: all clean run
+
+all: $(TARGET).3dsx
+
+$(BUILD)/%.o: %.c
+	@mkdir -p $(dir $@)
+	@echo "Compiling $<..."
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(TARGET).elf: $(OBJS)
+	@echo "Linking $@..."
+	$(CC) $(OBJS) $(LDFLAGS) -o $@
+
+$(TARGET).smdh: $(ICON)
+	@echo "Creating SMDH metadata banner $@..."
+	smdhtool --create "$(APP_TITLE)" "$(APP_DESC)" "$(APP_AUTHOR)" $(ICON) $@
+
+$(TARGET).3dsx: $(TARGET).elf $(TARGET).smdh
+	@echo "Creating 3DSX executable $@..."
+	3dsxtool $< $@ --smdh=$(TARGET).smdh
+
+run: all
+	@echo "Sending to 3DS via Wi-Fi..."
+	3dslink $(TARGET).3dsx
+
+clean:
+	@rm -rf $(BUILD) $(TARGET).elf $(TARGET).3dsx $(TARGET).smdh
