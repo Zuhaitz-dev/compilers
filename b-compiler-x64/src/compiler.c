@@ -1219,7 +1219,8 @@ AST_node_t *parse_infix(AST_node_t *left)
     }
 
     // Assignments (right-associative)
-    if (op_token.type == TOK_ASSIGN || (op_token.type >= TOK_ADD_ASSIGN && op_token.type <= TOK_RSHIFT_ASSIGN))
+    if (op_token.type == TOK_ASSIGN ||
+        (op_token.type >= TOK_ADD_ASSIGN && op_token.type <= TOK_RSHIFT_ASSIGN))
     {
         AST_node_t *node;
 
