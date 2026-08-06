@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nasm cmake gcc-14 g++-14 python3-pip
+          sudo pip install --break-system-packages clang-format==22.1.8
+
+      - name: Format check
+        run: ./scripts/check-format.sh
+
+      - name: Test b-compiler-x64
+        run: ./b-compiler-x64/tests/run.sh
+
+      - name: Test forth-nasm-x64
+        run: ./forth-nasm-x64/tests/run.sh
+
+      - name: Test forth-c-x64_3ds (Linux target)
+        working-directory: forth-c-x64_3ds
+        run: |
+          make CC=gcc-14
+          make test
