@@ -28,6 +28,13 @@ The `examples/` directory contains several B programs:
 - `hello.b`: A classic "Hello, World!" example.
 - `fib.b`: Generates the Fibonacci sequence.
 - `fact.b`: Calculates factorials from 1 to 10.
+- `fizzbuzz.b`: Classic FizzBuzz using a `for` loop and `%`.
+- `prime.b`: Sieve of Eratosthenes with a global vector.
+- `gcd.b`: Greatest common divisor (Euclidean algorithm).
+- `collatz.b`: Prints the Collatz (3n+1) sequence for 27.
+- `sort.b`: Bubble sort of a 10-element vector.
+- `towers.b`: Towers of Hanoi via recursion.
+- `argv.b`: Prints the command-line arguments via `main(argc, argv)`.
 - `game.b`: A "B-Pong" game showcase using Raylib.
 
 ## Implementation Details
