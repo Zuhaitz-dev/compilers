@@ -23,6 +23,9 @@ void ASCII_representation(const unsigned char high_char, const unsigned char low
     }
 }
 
+// clang-format off
+// Designated-initializer alignment is non-deterministic in clang-format 22;
+// freeze these maps so check-format is stable.
 const char *alu_map[] = {
     [FUNC_ADD] = "ADD", [FUNC_SUB] = "SUB", [FUNC_MULT] = "MULT", [FUNC_DIV] = "DIV",
     [FUNC_NEG] = "NEG", [FUNC_INC] = "INC", [FUNC_DEC] = "DEC",   [FUNC_ABS] = "ABS",
@@ -35,6 +38,7 @@ const char *stack_op_map[] = {
 
 const char *branch_map[] = {[FUNC_BEQ] = "BEQ", [FUNC_BNE] = "BNE", [FUNC_BZ] = "BZ",
                             [FUNC_BNZ] = "BNZ", [FUNC_BN] = "BN",   [FUNC_BP] = "BP"};
+// clang-format on
 
 int main(int argc, char **argv)
 {
