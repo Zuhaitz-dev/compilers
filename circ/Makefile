@@ -87,8 +87,9 @@ cc_driver: $(TARGET)
 	    ./$(TARGET) --c --driver "$$ex" -o /tmp/circ_d_$$base.c 2>/dev/null || continue; \
 	    $(CC) -O1 -o /tmp/circ_d_$$base /tmp/circ_d_$$base.c 2>/dev/null || { \
 	        printf "  FAIL %s (compile)\n" "$$base"; errors=$$((errors + 1)); continue; }; \
-	    if /tmp/circ_d_$$base --cycles=8 2>/dev/null | \
-	       diff -q - <(./$(TARGET) --sim "$$ex" --cycles=8 2>/dev/null) >/dev/null; then \
+	    /tmp/circ_d_$$base --cycles=8 > /tmp/circ_d_$$base.out 2>/dev/null; \
+	    ./$(TARGET) --sim "$$ex" --cycles=8 > /tmp/circ_s_$$base.out 2>/dev/null; \
+	    if diff -q /tmp/circ_d_$$base.out /tmp/circ_s_$$base.out >/dev/null; then \
 	        printf "  OK   %s\n" "$$base"; \
 	    else \
 	        printf "  FAIL %s (differs from --sim)\n" "$$base"; \
@@ -102,7 +103,7 @@ v_test: $(TARGET)
 	@echo "=== VERILOG COMPILATION ==="
 	@for ex in and not nand half_adder chain full_adder multiport \
 	          counter2 counter4 toggle dff dlatch jkff; do \
-	    echo -n "  $$ex.circ: "; \
+	    printf "  %s: " "$$ex.circ"; \
 	    ./$(TARGET) --v examples/$$ex.circ 2>/dev/null > /tmp/vtest_$$ex.v && \
 	    iverilog -o /dev/null /tmp/vtest_$$ex.v 2>&1 | \
 	        grep -v "No top level\|warning" | grep -q . && \
@@ -149,7 +150,7 @@ check: $(TARGET)
 test_vfrom: $(TARGET)
 	@echo "=== VERILOG->CIRC ==="
 	@for f in examples/*.v; do \
-	    echo -n "  $$f: "; \
+	    printf "  %s: " "$$f"; \
 	    ./$(TARGET) --from-v $$f 2>/dev/null | \
 	        ./$(TARGET) --check /dev/stdin >/dev/null 2>&1 && \
 	        echo "OK" || echo "FAIL"; \
