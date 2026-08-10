@@ -1,0 +1,39 @@
+#include <stdint.h>
+
+typedef struct {
+    int DFF_0_q;
+    int DFF_0_clk;
+} dff_sub_st;
+
+static void dff_sub(dff_sub_st *st, int D, int CLK, int *Q) {
+    int DFF_0;
+    int _changed = 1, _guard = 0;
+    static int _inited = 0;
+    if (!_inited) {
+    st->DFF_0_clk = 0;
+        _inited = 1;
+    }
+    while (_changed && _guard++ < 8) {
+        _changed = 0;
+    if (CLK && !st->DFF_0_clk) { int _t = D; if (_t != st->DFF_0_q) { st->DFF_0_q = _t; _changed = 1; } }
+    st->DFF_0_clk = CLK;
+    if (Q) *Q = st->DFF_0_q;
+    }
+}
+
+void circuit(int D1, int CLK, int D0, int *Q1, int *Q0) {
+    static dff_sub_st dff_sub_0_st;
+    static dff_sub_st dff_sub_1_st;
+    int _changed = 1, _guard = 0;
+    static int _inited = 0;
+    if (!_inited) {
+    dff_sub(&dff_sub_0_st, 0, 0, Q1);
+    dff_sub(&dff_sub_1_st, 0, 0, Q0);
+        _inited = 1;
+    }
+    while (_changed && _guard++ < 11) {
+        _changed = 0;
+    dff_sub(&dff_sub_0_st, D1, CLK, Q1);
+    dff_sub(&dff_sub_1_st, D0, CLK, Q0);
+    }
+}

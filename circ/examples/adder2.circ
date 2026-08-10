@@ -1,0 +1,11 @@
+A0>--+--[full_adder(A=A0 B=B0 Cin=Cin S=S0 Cout=C0)]--S0<
+     |
+B0>--+
+     |
+Cin>-+
+
+A1>--+--[full_adder(A=A1 B=B1 Cin=C0 S=S1 Cout=C1)]--S1<
+     |
+B1>--+
+     |
+C0---+

@@ -1,0 +1,9 @@
+module circuit (
+  input A,
+  input B,
+  output Q
+);
+  wire AND_0;
+  assign AND_0 = A & B;
+  assign Q = AND_0;
+endmodule

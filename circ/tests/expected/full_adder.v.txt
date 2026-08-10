@@ -1,0 +1,20 @@
+module circuit (
+  input A,
+  input B,
+  input Cin,
+  output S,
+  output Cout
+);
+  wire XOR_0;
+  wire XOR_1;
+  wire AND_2;
+  wire AND_3;
+  wire OR_4;
+  assign XOR_0 = A ^ B;
+  assign XOR_1 = XOR_0 ^ Cin;
+  assign AND_2 = A & B;
+  assign AND_3 = XOR_0 & Cin;
+  assign OR_4 = AND_2 | AND_3;
+  assign S = XOR_1;
+  assign Cout = OR_4;
+endmodule

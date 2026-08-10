@@ -1,0 +1,9 @@
+module circuit (
+  input D,
+  input E,
+  output Q
+);
+  reg DLATCH_0 = 1'b0;
+  always @(*) if (E) DLATCH_0 = D;
+  assign Q = DLATCH_0;
+endmodule

@@ -1,0 +1,16 @@
+#include <stdint.h>
+
+void circuit(int A, int B, int *Q) {
+    int AND_0;
+    int _changed = 1, _guard = 0;
+    static int _inited = 0;
+    if (!_inited) {
+    AND_0 = 0 & 0;
+        _inited = 1;
+    }
+    while (_changed && _guard++ < 8) {
+        _changed = 0;
+    { int _t = A & B; if (_t != AND_0) { AND_0 = _t; _changed = 1; } }
+    if (Q) *Q = AND_0;
+    }
+}

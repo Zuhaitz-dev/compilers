@@ -1,0 +1,8 @@
+D1>--+--[dff_sub(D=D1 CLK=CLK Q=Q1)]---Q1<
+     |
+CLK>-+
+
+D0>--+--[dff_sub(D=D0 CLK=CLK Q=Q0)]---Q0<
+D0>--+--[dff_sub(D=D0 CLK=CLK Q=Q0)]---Q0<
+     |
+CLK>-+

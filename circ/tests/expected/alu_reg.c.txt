@@ -1,0 +1,37 @@
+#include <stdint.h>
+
+void circuit(int A, int B, int OP, int CLK, int *Q) {
+    static int DFF_6_q = 0;
+    static int DFF_6_clk = 0;
+    int AND_0;
+    int XOR_1;
+    int NOT_2;
+    int AND_3;
+    int AND_4;
+    int OR_5;
+    int DFF_6;
+    int _changed = 1, _guard = 0;
+    static int _inited = 0;
+    if (!_inited) {
+    AND_0 = 0 & 0;
+    XOR_1 = 0 ^ 0;
+    NOT_2 = (~0) & 0x1;
+    AND_3 = AND_0 & (NOT_2 * 0xF);
+    AND_4 = XOR_1 & (0 * 0xF);
+    OR_5 = AND_3 | AND_4;
+    DFF_6_clk = 0;
+        _inited = 1;
+    }
+    while (_changed && _guard++ < 22) {
+        _changed = 0;
+    { int _t = A & B; if (_t != AND_0) { AND_0 = _t; _changed = 1; } }
+    { int _t = A ^ B; if (_t != XOR_1) { XOR_1 = _t; _changed = 1; } }
+    { int _t = (~OP) & 0x1; if (_t != NOT_2) { NOT_2 = _t; _changed = 1; } }
+    { int _t = AND_0 & (NOT_2 * 0xF); if (_t != AND_3) { AND_3 = _t; _changed = 1; } }
+    { int _t = XOR_1 & (OP * 0xF); if (_t != AND_4) { AND_4 = _t; _changed = 1; } }
+    { int _t = AND_3 | AND_4; if (_t != OR_5) { OR_5 = _t; _changed = 1; } }
+    if (CLK && !DFF_6_clk) { int _t = OR_5; if (_t != DFF_6_q) { DFF_6_q = _t; _changed = 1; } }
+    DFF_6_clk = CLK;
+    if (Q) *Q = DFF_6_q;
+    }
+}

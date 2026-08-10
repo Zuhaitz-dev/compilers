@@ -1,0 +1,18 @@
+module invert (
+  input A
+  , output Q
+);
+  wire NOT_0;
+  assign NOT_0 = ~A;
+  assign Q = NOT_0;
+endmodule
+
+module circuit (
+  input A,
+  output Q
+);
+  invert invert_0 (
+    .A(A),
+    .Q(Q)
+  );
+endmodule

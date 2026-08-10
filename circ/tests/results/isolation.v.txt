@@ -1,0 +1,28 @@
+module dff_sub (
+  input D
+  , input CLK
+  , output Q
+);
+  reg DFF_0 = 1'b0;
+  always @(posedge CLK) DFF_0 <= D;
+  assign Q = DFF_0;
+endmodule
+
+module circuit (
+  input D1,
+  input CLK,
+  input D0,
+  output Q1,
+  output Q0
+);
+  dff_sub dff_sub_0 (
+    .D(D1),
+    .CLK(CLK),
+    .Q(Q1)
+  );
+  dff_sub dff_sub_1 (
+    .D(D0),
+    .CLK(CLK),
+    .Q(Q0)
+  );
+endmodule

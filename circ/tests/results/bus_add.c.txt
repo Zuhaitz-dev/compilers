@@ -1,0 +1,20 @@
+#include <stdint.h>
+
+void circuit(int A, int B, int *S, int *C) {
+    int XOR_0;
+    int AND_1;
+    int _changed = 1, _guard = 0;
+    static int _inited = 0;
+    if (!_inited) {
+    XOR_0 = 0 ^ 0;
+    AND_1 = 0 & 0;
+        _inited = 1;
+    }
+    while (_changed && _guard++ < 10) {
+        _changed = 0;
+    { int _t = A ^ B; if (_t != XOR_0) { XOR_0 = _t; _changed = 1; } }
+    { int _t = A & B; if (_t != AND_1) { AND_1 = _t; _changed = 1; } }
+    if (S) *S = XOR_0;
+    if (C) *C = AND_1;
+    }
+}

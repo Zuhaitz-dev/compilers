@@ -1,0 +1,74 @@
+#include <stdint.h>
+
+void circuit(int CLK, int *Q0, int *Q1, int *Q2, int *Q3, int *ND0, int *ND1, int *ND2, int *ND3) {
+    static int DFF_1_q = 0;
+    static int DFF_1_clk = 0;
+    static int DFF_3_q = 0;
+    static int DFF_3_clk = 0;
+    static int DFF_5_q = 0;
+    static int DFF_5_clk = 0;
+    static int DFF_7_q = 0;
+    static int DFF_7_clk = 0;
+    int NOT_0;
+    int DFF_1;
+    int NOT_2;
+    int DFF_3;
+    int NOT_4;
+    int DFF_5;
+    int NOT_6;
+    int DFF_7;
+    int NOT_8;
+    int AND_9;
+    int AND_10;
+    int AND_11;
+    int AND_12;
+    int AND_13;
+    int _changed = 1, _guard = 0;
+    static int _inited = 0;
+    if (!_inited) {
+    NOT_0 = (~DFF_1_q) & 0x1;
+    NOT_2 = (~DFF_3_q) & 0x1;
+    NOT_4 = (~DFF_5_q) & 0x1;
+    NOT_6 = (~DFF_7_q) & 0x1;
+    AND_9 = DFF_7_q & DFF_3_q;
+    NOT_8 = (~AND_9) & 0x1;
+    AND_10 = NOT_0 & NOT_8;
+    AND_11 = NOT_2 & NOT_8;
+    AND_12 = NOT_4 & NOT_8;
+    AND_13 = NOT_6 & NOT_8;
+    DFF_1_clk = 0;
+    DFF_3_clk = NOT_0;
+    DFF_5_clk = NOT_2;
+    DFF_7_clk = NOT_4;
+        _inited = 1;
+    }
+    while (_changed && _guard++ < 33) {
+        _changed = 0;
+    { int _t = (~DFF_1_q) & 0x1; if (_t != NOT_0) { NOT_0 = _t; _changed = 1; } }
+    { int _t = (~DFF_3_q) & 0x1; if (_t != NOT_2) { NOT_2 = _t; _changed = 1; } }
+    { int _t = (~DFF_5_q) & 0x1; if (_t != NOT_4) { NOT_4 = _t; _changed = 1; } }
+    { int _t = (~DFF_7_q) & 0x1; if (_t != NOT_6) { NOT_6 = _t; _changed = 1; } }
+    { int _t = DFF_7_q & DFF_3_q; if (_t != AND_9) { AND_9 = _t; _changed = 1; } }
+    { int _t = (~AND_9) & 0x1; if (_t != NOT_8) { NOT_8 = _t; _changed = 1; } }
+    { int _t = NOT_0 & NOT_8; if (_t != AND_10) { AND_10 = _t; _changed = 1; } }
+    { int _t = NOT_2 & NOT_8; if (_t != AND_11) { AND_11 = _t; _changed = 1; } }
+    { int _t = NOT_4 & NOT_8; if (_t != AND_12) { AND_12 = _t; _changed = 1; } }
+    { int _t = NOT_6 & NOT_8; if (_t != AND_13) { AND_13 = _t; _changed = 1; } }
+    if (CLK && !DFF_1_clk) { int _t = NOT_0; if (_t != DFF_1_q) { DFF_1_q = _t; _changed = 1; } }
+    DFF_1_clk = CLK;
+    if (NOT_0 && !DFF_3_clk) { int _t = NOT_2; if (_t != DFF_3_q) { DFF_3_q = _t; _changed = 1; } }
+    DFF_3_clk = NOT_0;
+    if (NOT_2 && !DFF_5_clk) { int _t = NOT_4; if (_t != DFF_5_q) { DFF_5_q = _t; _changed = 1; } }
+    DFF_5_clk = NOT_2;
+    if (NOT_4 && !DFF_7_clk) { int _t = NOT_6; if (_t != DFF_7_q) { DFF_7_q = _t; _changed = 1; } }
+    DFF_7_clk = NOT_4;
+    if (Q0) *Q0 = DFF_1_q;
+    if (Q1) *Q1 = DFF_3_q;
+    if (Q2) *Q2 = DFF_5_q;
+    if (Q3) *Q3 = DFF_7_q;
+    if (ND0) *ND0 = AND_10;
+    if (ND1) *ND1 = AND_11;
+    if (ND2) *ND2 = AND_12;
+    if (ND3) *ND3 = AND_13;
+    }
+}

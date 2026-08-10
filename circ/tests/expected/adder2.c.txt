@@ -1,0 +1,47 @@
+#include <stdint.h>
+
+static void full_adder(int A, int B, int Cin, int *S, int *Cout) {
+    int XOR_0;
+    int XOR_1;
+    int AND_2;
+    int AND_3;
+    int OR_4;
+    int _changed = 1, _guard = 0;
+    static int _inited = 0;
+    if (!_inited) {
+    XOR_0 = 0 ^ 0;
+    XOR_1 = XOR_0 ^ 0;
+    AND_2 = 0 & 0;
+    AND_3 = XOR_0 & 0;
+    OR_4 = AND_2 | AND_3;
+        _inited = 1;
+    }
+    while (_changed && _guard++ < 17) {
+        _changed = 0;
+    { int _t = A ^ B; if (_t != XOR_0) { XOR_0 = _t; _changed = 1; } }
+    { int _t = XOR_0 ^ Cin; if (_t != XOR_1) { XOR_1 = _t; _changed = 1; } }
+    { int _t = A & B; if (_t != AND_2) { AND_2 = _t; _changed = 1; } }
+    { int _t = XOR_0 & Cin; if (_t != AND_3) { AND_3 = _t; _changed = 1; } }
+    { int _t = AND_2 | AND_3; if (_t != OR_4) { OR_4 = _t; _changed = 1; } }
+    if (S) *S = XOR_1;
+    if (Cout) *Cout = OR_4;
+    }
+}
+
+void circuit(int A0, int B0, int Cin, int A1, int B1, int *S0, int *S1) {
+    int _w0;
+    int _changed = 1, _guard = 0;
+    static int _inited = 0;
+    if (!_inited) {
+    full_adder(0, 0, 0, S0, &_w0);
+    full_adder(0, 0, _w0, S1, 0);
+        _inited = 1;
+    }
+    while (_changed && _guard++ < 14) {
+        _changed = 0;
+    { int _t = _w0;
+    full_adder(A0, B0, Cin, S0, &_w0);
+    if (_t != _w0) _changed = 1; }
+    full_adder(A1, B1, _w0, S1, 0);
+    }
+}

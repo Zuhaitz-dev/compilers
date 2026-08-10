@@ -1,0 +1,48 @@
+module circuit (
+  input CLK,
+  output Q0,
+  output Q1,
+  output Q2,
+  output Q3,
+  output ND0,
+  output ND1,
+  output ND2,
+  output ND3
+);
+  wire NOT_0;
+  reg DFF_1 = 1'b0;
+  wire NOT_2;
+  reg DFF_3 = 1'b0;
+  wire NOT_4;
+  reg DFF_5 = 1'b0;
+  wire NOT_6;
+  reg DFF_7 = 1'b0;
+  wire NOT_8;
+  wire AND_9;
+  wire AND_10;
+  wire AND_11;
+  wire AND_12;
+  wire AND_13;
+  always @(posedge CLK) DFF_1 <= NOT_0;
+  assign NOT_0 = ~DFF_1;
+  always @(posedge NOT_0) DFF_3 <= NOT_2;
+  assign NOT_2 = ~DFF_3;
+  always @(posedge NOT_2) DFF_5 <= NOT_4;
+  assign NOT_4 = ~DFF_5;
+  always @(posedge NOT_4) DFF_7 <= NOT_6;
+  assign NOT_6 = ~DFF_7;
+  assign AND_9 = DFF_7 & DFF_3;
+  assign NOT_8 = ~AND_9;
+  assign AND_10 = NOT_0 & NOT_8;
+  assign AND_11 = NOT_2 & NOT_8;
+  assign AND_12 = NOT_4 & NOT_8;
+  assign AND_13 = NOT_6 & NOT_8;
+  assign Q0 = DFF_1;
+  assign Q1 = DFF_3;
+  assign Q2 = DFF_5;
+  assign Q3 = DFF_7;
+  assign ND0 = AND_10;
+  assign ND1 = AND_11;
+  assign ND2 = AND_12;
+  assign ND3 = AND_13;
+endmodule
