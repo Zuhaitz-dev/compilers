@@ -1,9 +1,0 @@
-module circuit (
-  input [3:0] D,
-  input CLK,
-  output [3:0] Q
-);
-  reg [3:0] DFF_0 = 1'b0;
-  always @(posedge CLK) DFF_0 <= D;
-  assign Q = DFF_0;
-endmodule

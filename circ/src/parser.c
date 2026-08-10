@@ -437,22 +437,33 @@ static void pass_find_ports(parse_ctx_t *ctx)
             if (grid_get(g, x, y) == '[')
             {
                 int consumed = 0;
-                if (sscanf(&g->data[y][x], "[%d:%d]%n", &hi, &lo, &consumed) == 2 && consumed > 0)
+                char *p = &g->data[y][x] + 1;
+                char *end = NULL;
+                long v1 = strtol(p, &end, 10);
+                if (end != p && *end == ':')
                 {
-                    width = (hi >= lo) ? (hi - lo + 1) : (lo - hi + 1);
-                    if (width > 16)
+                    p = end + 1;
+                    long v2 = strtol(p, &end, 10);
+                    if (end != p && *end == ']')
                     {
-                        if (ctx->err)
+                        hi = (int)v1;
+                        lo = (int)v2;
+                        consumed = (int)(end - &g->data[y][x]) + 1;
+                        width = (hi >= lo) ? (hi - lo + 1) : (lo - hi + 1);
+                        if (width > 16)
                         {
-                            error_set_msg(ctx->err,
-                                          "bus '%s[%d:%d]' at (%d,%d) is "
-                                          "wider than 16 bits",
-                                          pn, hi, lo, s, y);
+                            if (ctx->err)
+                            {
+                                error_set_msg(ctx->err,
+                                              "bus '%s[%d:%d]' at (%d,%d) is "
+                                              "wider than 16 bits",
+                                              pn, hi, lo, s, y);
+                            }
+                            goto done;
                         }
-                        goto done;
+                        blen = consumed;
+                        x += consumed;
                     }
-                    blen = consumed;
-                    x += consumed;
                 }
             }
 
@@ -556,7 +567,12 @@ static void pass_find_ports(parse_ctx_t *ctx)
             if (nc >= cands_cap)
             {
                 cands_cap = cands_cap ? cands_cap * 2 : 64;
-                cands = realloc(cands, (size_t)cands_cap * sizeof(port_cand_t));
+                port_cand_t *cd = realloc(cands, (size_t)cands_cap * sizeof(port_cand_t));
+                if (!cd)
+                {
+                    goto done;
+                }
+                cands = cd;
             }
             strncpy(cands[nc].name, pn, 63);
             cands[nc].is_in = is_in;
@@ -659,10 +675,16 @@ static void add_binding(node_t *node, int is_out, const char *name, node_t *exte
         {
             node->output_bindings_cap =
                 node->output_bindings_cap ? node->output_bindings_cap * 2 : 4;
-            node->output_bindings =
-                realloc(node->output_bindings, node->output_bindings_cap * sizeof(port_binding_t));
+            port_binding_t *nb = realloc(node->output_bindings, (size_t)node->output_bindings_cap *
+                                                                    sizeof(port_binding_t));
+            if (!nb)
+            {
+                return;
+            }
+            node->output_bindings = nb;
         }
-        strncpy(node->output_bindings[node->num_output_bindings].name, name, 63);
+        strncpy(node->output_bindings[node->num_output_bindings].name, name,
+                63); // NOLINT: realloc guarded above
         node->output_bindings[node->num_output_bindings].external_node = external;
         node->num_output_bindings++;
     }
@@ -671,8 +693,13 @@ static void add_binding(node_t *node, int is_out, const char *name, node_t *exte
         if (node->num_input_bindings >= node->input_bindings_cap)
         {
             node->input_bindings_cap = node->input_bindings_cap ? node->input_bindings_cap * 2 : 4;
-            node->input_bindings =
-                realloc(node->input_bindings, node->input_bindings_cap * sizeof(port_binding_t));
+            port_binding_t *nb = realloc(node->input_bindings,
+                                         (size_t)node->input_bindings_cap * sizeof(port_binding_t));
+            if (!nb)
+            {
+                return;
+            }
+            node->input_bindings = nb;
         }
         strncpy(node->input_bindings[node->num_input_bindings].name, name, 63);
         node->input_bindings[node->num_input_bindings].external_node = external;

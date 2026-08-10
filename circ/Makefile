@@ -61,7 +61,9 @@ check_format:
 	fi
 
 lint:
-	clang-tidy src/*.c -- $(CFLAGS) 2>&1 | grep -v "warnings generated"
+	clang-tidy src/*.c -- -Wall -Wextra -Wpedantic -Werror -std=c99 \
+	    -Wno-format-truncation -O2 -DNDEBUG 2>&1 | \
+	    grep -v "warnings generated"
 
 BINDIR ?= /usr/local/bin
 install: $(TARGET)

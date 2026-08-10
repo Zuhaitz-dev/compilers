@@ -122,7 +122,12 @@ static void collect_sub_types(netlist_t *nl, sub_type_t **types, int *num, int *
             if (*num >= *cap)
             {
                 *cap = *cap ? *cap * 2 : 16;
-                *types = realloc(*types, *cap * sizeof(sub_type_t));
+                sub_type_t *nt = realloc(*types, (size_t)*cap * sizeof(sub_type_t));
+                if (!nt)
+                {
+                    return;
+                }
+                *types = nt;
             }
             (*types)[*num].nl = n->sub_netlist;
             strncpy((*types)[*num].tname, tname, NAME_MAX - 1);
@@ -157,6 +162,8 @@ static void emit_always(netlist_t *nl, node_t *n, char **sub_wire_var)
                 break;
             case 2:
                 v_read(src, ck, sizeof(ck), nl, sub_wire_var);
+                break;
+            default:
                 break;
             }
         }
@@ -239,7 +246,6 @@ static void emit_inst(netlist_t *nl, node_t *n, char **sub_wire_var)
             for (int j = 0; j < n->num_inputs; j++)
             {
                 v_read(n->inputs[j]->src, buf, sizeof(buf), nl, sub_wire_var);
-                got = 1;
                 break;
             }
         }
@@ -505,7 +511,7 @@ static void emit_sub_module(netlist_t *nl, netlist_t *sub, const char *mname)
     free(emitted);
     for (int i = 0; i < sub->num_nodes; i++)
     {
-        free(sub_wire[i]);
+        free(sub_wire[i]); // NOLINT: array sized sub->num_nodes
     }
     free(sub_wire);
     printf("endmodule\n\n");

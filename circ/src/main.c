@@ -5,7 +5,6 @@
 #include "backend.h"
 #include "grid.h"
 #include "parser.h"
-#include "backend.h"
 #include "netlist.h"
 #include "subcircuit.h"
 #include "vparser.h"
@@ -99,6 +98,7 @@ int main(int argc, char **argv)
     if (argpos + 1 >= argc)
     {
         print_usage(argv[0]);
+        free(args);
         return 1;
     }
 
@@ -121,6 +121,7 @@ int main(int argc, char **argv)
             if (argpos + 2 >= argc)
             {
                 fprintf(stderr, "error: --c --driver requires a file\n");
+                free(args);
                 return 1;
             }
             filename = argv[argpos + 2];
@@ -133,6 +134,7 @@ int main(int argc, char **argv)
             if (strcmp(argv[i], "--driver") == 0)
             {
                 fprintf(stderr, "error: --driver only applies to --c\n");
+                free(args);
                 return 1;
             }
         }
@@ -145,12 +147,14 @@ int main(int argc, char **argv)
         if (vparse(filename, &mod) != 0)
         {
             fprintf(stderr, "Failed to parse %s\n", filename);
+            free(args);
             return 1;
         }
         netlist_t *vnl = vbuild(&mod);
         if (!vnl)
         {
             fprintf(stderr, "Failed to build netlist from %s\n", filename);
+            free(args);
             return 1;
         }
         grid_t *vg = vlayout(vnl, mod.name);
@@ -165,6 +169,7 @@ int main(int argc, char **argv)
     if (!g)
     {
         fprintf(stderr, "Failed to load %s\n", filename);
+        free(args);
         return 1;
     }
 
@@ -196,16 +201,15 @@ int main(int argc, char **argv)
             fprintf(stderr, "Failed to parse %s\n", filename);
         }
         grid_free(g);
+        free(args);
         return 1;
     }
     grid_free(g);
 
+    int rc = 0;
     if (strcmp(mode, "--check") == 0)
     {
         printf("OK: %s\n", filename);
-        netlist_free(nl);
-        free(args);
-        return 0;
     }
     else if (strcmp(mode, "--sim") == 0)
     {
@@ -215,10 +219,7 @@ int main(int argc, char **argv)
     }
     else if (strcmp(mode, "--truth") == 0)
     {
-        int rc = backend_truth(nl);
-        netlist_free(nl);
-        free(args);
-        return rc;
+        rc = backend_truth(nl);
     }
     else if (strcmp(mode, "--c") == 0)
     {
@@ -252,5 +253,5 @@ int main(int argc, char **argv)
 
     netlist_free(nl);
     free(args);
-    return 0;
+    return rc;
 }

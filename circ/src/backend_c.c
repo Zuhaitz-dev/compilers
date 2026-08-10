@@ -133,7 +133,12 @@ static void collect_sub_types(netlist_t *nl, sub_type_t **types, int *num, int *
             if (*num >= *cap)
             {
                 *cap = *cap ? *cap * 2 : 16;
-                *types = realloc(*types, *cap * sizeof(sub_type_t));
+                sub_type_t *nt = realloc(*types, (size_t)*cap * sizeof(sub_type_t));
+                if (!nt)
+                {
+                    return;
+                }
+                *types = nt;
             }
             (*types)[*num].nl = n->sub_netlist;
             strncpy((*types)[*num].tname, tname, NAME_MAX - 1);
@@ -305,7 +310,6 @@ static void emit_call(netlist_t *nl, node_t *n, char **sub_wire_var)
             for (int j = 0; j < n->num_inputs; j++)
             {
                 c_read(n->inputs[j]->src, buf, sizeof(buf), nl, sub_wire_var);
-                got = 1;
                 break;
             }
         }
@@ -339,7 +343,7 @@ static void emit_call(netlist_t *nl, node_t *n, char **sub_wire_var)
                     got = 1;
                     break;
                 }
-                else if (sub_wire_var[n->id])
+                if (sub_wire_var[n->id])
                 {
                     printf("%s&%s", first_arg ? "" : ", ", sub_wire_var[n->id]);
                     first_arg = 0;
@@ -397,6 +401,8 @@ static void seq_pin_exprs(netlist_t *nl, node_t *n, char *d, char *ck, char *j, 
             case 2:
                 c_read(src, ck, NAME_MAX, nl, sub_wire_var);
                 break;
+            default:
+                break;
             }
         }
         else if (pin == 0)
@@ -453,8 +459,6 @@ static void emit_seq_capture(netlist_t *nl, node_t *n, char **sub_wire_var)
     }
 }
 
-/* Simultaneous edge capture in two phases: snapshot all next states using
-   pre-edge values, then apply them all. Mirrors non-blocking Verilog. */
 static void emit_seq_snapshot(netlist_t *nl, node_t *n, char **sub_wire_var)
 {
     char d[NAME_MAX], ck[NAME_MAX], j[NAME_MAX], k[NAME_MAX];
@@ -749,7 +753,7 @@ static void emit_sub_func(netlist_t *nl, netlist_t *sub, const char *tname)
     printf("    }\n");
     for (int i = 0; i < sub->num_nodes; i++)
     {
-        free(sub_wire[i]);
+        free(sub_wire[i]); // NOLINT: array sized sub->num_nodes
     }
     free(sub_wire);
     free(emitted);
@@ -916,7 +920,7 @@ void backend_c(netlist_t *nl)
     printf("    }\n");
     for (int i = 0; i < nl->num_nodes; i++)
     {
-        free(sub_wire_var[i]);
+        free(sub_wire_var[i]); // NOLINT: array sized nl->num_nodes
     }
     free(sub_wire_var);
     free(emitted);

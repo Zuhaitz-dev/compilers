@@ -30,9 +30,16 @@ grid_t *grid_load(const char *filename)
         {
             g->width = len;
         }
+        char **gd = realloc(g->data, (size_t)(g->height + 1) * sizeof(char *));
+        if (!gd)
+        {
+            fclose(f);
+            grid_free(g);
+            return NULL;
+        }
+        g->data = gd;
+        g->data[g->height] = circ_strdup(line);
         g->height++;
-        g->data = realloc(g->data, g->height * sizeof(char *));
-        g->data[g->height - 1] = circ_strdup(line);
     }
     fclose(f);
 
@@ -41,7 +48,13 @@ grid_t *grid_load(const char *filename)
         int len = (int)strlen(g->data[i]);
         if (len < g->width)
         {
-            g->data[i] = realloc(g->data[i], g->width + 1);
+            char *gd = realloc(g->data[i], g->width + 1);
+            if (!gd)
+            {
+                grid_free(g);
+                return NULL;
+            }
+            g->data[i] = gd;
             memset(g->data[i] + len, ' ', g->width - len);
             g->data[i][g->width] = '\0';
         }

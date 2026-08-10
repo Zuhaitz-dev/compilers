@@ -305,8 +305,6 @@ def v_vec(file, inputs, outputs, vec, cycles, d):
         L.append("    #1 $display(\"" + "".join(f"{n}=%0d " for n, _ in outputs)
                  + "\", " + ", ".join(n for n, _ in outputs) + ");")
     else:
-        # Mirror --sim: toggle only the input literally named CLK; other
-        # clocks stay at their vector values (no edges).
         clk = next((n for n, _ in inputs if n.upper() == "CLK"), None)
         for c in range(cycles):
             if clk:
@@ -355,10 +353,6 @@ def check_circuit(circ, rng, examples, tag):
         input_names = {n for n, _ in inputs}
         seq_clks = set(re.findall(r"always @\(posedge (\w+)", vv.stdout))
         has_latch = "always @(*)" in vv.stdout
-        # Clocks driven internally (not exposed as inputs) can't be
-        # controlled, so those circuits are crash-checked only. Input
-        # clocks with other names are held constant at 0 (no edges), so
-        # sim and C must still agree.
         internal_clks = seq_clks - input_names
         nonclk_clks = seq_clks - {n for n, _ in inputs if n.upper() == "CLK"}
         skip_v = has_latch or bool(internal_clks)
@@ -424,7 +418,6 @@ def main():
             i += 1
 
     rng = random.Random(seed)
-    # corpus: examples + any saved regressions (mutate the interesting shapes)
     corpus = load_examples()
     if os.path.isdir(REGRESS):
         for f in sorted(os.listdir(REGRESS)):

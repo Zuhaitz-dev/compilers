@@ -9,7 +9,7 @@ const char *node_type_names[] = {
     "XNOR",  "DFF",    "JKFF", "DLATCH", "CLOCK", "GND",  "VCC", "SUBCIRCUIT",
 };
 
-int node_type_input_count(node_type_t t)
+static int node_type_input_count(node_type_t t)
 {
     switch (t)
     {
@@ -74,7 +74,12 @@ node_t *netlist_add_node(netlist_t *nl, const char *name, node_type_t type, int 
     if (nl->num_nodes >= nl->node_cap)
     {
         nl->node_cap *= 2;
-        nl->nodes = realloc(nl->nodes, nl->node_cap * sizeof(node_t *));
+        node_t **nd = realloc(nl->nodes, (size_t)nl->node_cap * sizeof(node_t *));
+        if (!nd)
+        {
+            return NULL;
+        }
+        nl->nodes = nd;
     }
     node_t *n = calloc(1, sizeof(node_t));
     strncpy(n->name, name, NAME_MAX - 1);
@@ -112,14 +117,26 @@ int netlist_add_wire(netlist_t *nl, node_t *src, int src_pin, node_t *dst, int d
     if (src->num_outputs >= src->output_cap)
     {
         src->output_cap = src->output_cap ? src->output_cap * 2 : 4;
-        src->outputs = realloc(src->outputs, src->output_cap * sizeof(wire_t *));
+        wire_t **ow = realloc(src->outputs, (size_t)src->output_cap * sizeof(wire_t *));
+        if (!ow)
+        {
+            free(w);
+            return 0;
+        }
+        src->outputs = ow;
     }
     src->outputs[src->num_outputs++] = w;
 
     if (dst->num_inputs >= dst->input_cap)
     {
         dst->input_cap = dst->input_cap ? dst->input_cap * 2 : 4;
-        dst->inputs = realloc(dst->inputs, dst->input_cap * sizeof(wire_t *));
+        wire_t **iw = realloc(dst->inputs, (size_t)dst->input_cap * sizeof(wire_t *));
+        if (!iw)
+        {
+            free(w);
+            return 0;
+        }
+        dst->inputs = iw;
     }
     dst->inputs[dst->num_inputs++] = w;
     return 1;
@@ -237,7 +254,11 @@ node_t **netlist_get_inputs(netlist_t *nl, int *count)
             (*count)++;
         }
     }
-    node_t **result = malloc(*count * sizeof(node_t *));
+    if (*count == 0)
+    {
+        return NULL;
+    }
+    node_t **result = malloc((size_t)*count * sizeof(node_t *));
     int j = 0;
     for (int i = 0; i < nl->num_nodes; i++)
     {
@@ -259,7 +280,11 @@ node_t **netlist_get_outputs(netlist_t *nl, int *count)
             (*count)++;
         }
     }
-    node_t **result = malloc(*count * sizeof(node_t *));
+    if (*count == 0)
+    {
+        return NULL;
+    }
+    node_t **result = malloc((size_t)*count * sizeof(node_t *));
     int j = 0;
     for (int i = 0; i < nl->num_nodes; i++)
     {

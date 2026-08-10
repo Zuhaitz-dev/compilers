@@ -268,6 +268,7 @@ circ/
 │   ├── parser.h/c      — ASCII → netlist pipeline + validation
 │   ├── subcircuit.h/c  — Subcircuit resolution, per-instance clones
 │   ├── backend.h       — Backend interface
+│   ├── backend_internal.h — Helpers shared by the C/Verilog backends
 │   ├── backend_sim.c   — Simulation + truth table
 │   ├── backend_c.c     — C code generation
 │   ├── backend_v.c     — Verilog generation
@@ -281,11 +282,17 @@ circ/
 ├── tests/
 │   ├── negative/       — Intentionally broken circuits (each must fail)
 │   ├── stress/         — Large circuits (300+ signals / chained subs / 20-port subs)
+│   ├── expected/       — Golden outputs for `make check`
+│   ├── fuzz/           — Fuzz corpus + saved regressions
 │   ├── cc_semantic.py  — Compile+run generated C, compare to --sim
-│   └── v_semantic.py   — iverilog+vvp, compare to --sim
-├── .clang-format       — Code style
-├── .clang-tidy         — Static analysis
+│   ├── v_semantic.py   — iverilog+vvp, compare to --sim
+│   ├── fuzz.py         — Randomized equivalence fuzzer
+│   └── run_campaign.py — Parallel fuzz campaign across seeds
 └── Makefile            — Build system
+```
+
+The shared `.clang-format` and `.clang-tidy` (and the repo `.gitignore`) live
+at the repository root, not in this entry.
 ```
 
 ## Build

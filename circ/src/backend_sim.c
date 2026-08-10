@@ -22,9 +22,8 @@ static int bcast_val(node_t *gate, node_t *src, int v)
 /* Compute a node's value from the CURRENT values of its inputs.
    No recursion and no caching: eval_settle() iterates full passes so
    ripple counters and latches settle correctly. */
-void eval_node(netlist_t *nl, node_t *n, int *seen)
+void eval_node(netlist_t *nl, node_t *n)
 {
-    (void)seen;
     (void)nl;
     switch (n->type)
     {
@@ -157,9 +156,7 @@ void eval_node(netlist_t *nl, node_t *n, int *seen)
             }
         }
 
-        int *sub_seen = calloc((size_t)sub->num_nodes, sizeof(int));
-        eval_settle(sub, sub_seen);
-        free(sub_seen);
+        eval_settle(sub);
 
         n->value = 0;
         for (int si = 0; si < sub->num_nodes; si++)
@@ -196,9 +193,7 @@ void eval_node(netlist_t *nl, node_t *n, int *seen)
     }
 }
 
-/* Helper: settle all combinational values without edge captures. Flops keep
-   their current state; outputs propagate. Returns 1 if any value changed. */
-static int settle_comb(netlist_t *nl, int *seen)
+static int settle_comb(netlist_t *nl)
 {
     int max_pass = nl->num_nodes + 4;
     int any = 0;
@@ -209,7 +204,7 @@ static int settle_comb(netlist_t *nl, int *seen)
         {
             node_t *n = nl->nodes[i];
             int before = n->value;
-            eval_node(nl, n, seen);
+            eval_node(nl, n);
             if (n->value != before)
             {
                 changed = 1;
@@ -224,7 +219,6 @@ static int settle_comb(netlist_t *nl, int *seen)
     return any;
 }
 
-/* Per-flop edge capture. Returns 1 if a posedge occurred. */
 static int flop_clock_rose(node_t *n)
 {
     int clk_val = 0;
@@ -247,7 +241,6 @@ static int flop_clock_rose(node_t *n)
     return rose;
 }
 
-/* Snapshot the next state of a flop using pre-apply values. */
 static void flop_snapshot(node_t *n)
 {
     int d_val = 0, j_val = 0, k_val = 0;
@@ -288,21 +281,14 @@ static void flop_snapshot(node_t *n)
     n->pending_valid = 1;
 }
 
-/* Repeatedly evaluate until the circuit settles. Ripple counters and
-   latches need several passes to cascade; the node count caps runaway
-   (e.g. oscillating) circuits.
-
-   Edge-triggered flops follow the Verilog delta model: each wave settles
-   the combinational logic, then every flop whose clock rose that wave
-   snapshots its D from the pre-apply values and all captures are applied
-   simultaneously. Flops clocked by another flop's output (ripple) are
-   handled by repeating the wave with the newly settled values. */
-void eval_settle(netlist_t *nl, int *seen)
+/* Settle with Verilog delta semantics: each wave settles combinational
+   logic, snapshots rising flops, then applies all captures together. */
+void eval_settle(netlist_t *nl)
 {
     int max_waves = nl->num_nodes + 8;
     for (int w = 0; w < max_waves; w++)
     {
-        settle_comb(nl, seen);
+        settle_comb(nl);
         int rose_count = 0;
         for (int i = 0; i < nl->num_nodes; i++)
         {
@@ -335,8 +321,6 @@ void eval_settle(netlist_t *nl, int *seen)
 
 void backend_sim(netlist_t *nl, int argc, char **argv)
 {
-    int *seen = calloc(nl->num_nodes, sizeof(int));
-
     /* Parse input values, cycles, clock port, and dump flag */
     int cycles = 1;
     int dump = 0;
@@ -353,29 +337,48 @@ void backend_sim(netlist_t *nl, int argc, char **argv)
             dump = 1;
             continue;
         }
-        if (sscanf(argv[i], "--cycles=%d", &cycles) == 1)
+        if (strncmp(argv[i], "--cycles=", 9) == 0 && argv[i][9] != '\0')
         {
+            char *end = NULL;
+            long v = strtol(argv[i] + 9, &end, 10);
+            if (end != argv[i] + 9)
+            {
+                cycles = (int)v;
+            }
             continue;
         }
-        if (sscanf(argv[i], "--clock=%63s", clock_port) == 1)
+        if (strncmp(argv[i], "--clock=", 8) == 0)
         {
+            strncpy(clock_port, argv[i] + 8, NAME_MAX - 1);
+            clock_port[NAME_MAX - 1] = '\0';
             has_clock = 1;
             continue;
         }
-        char name[NAME_MAX];
-        int val;
-        if (sscanf(argv[i], "%63[^=]=%d", name, &val) == 2)
+        char *eq = strchr(argv[i], '=');
+        if (eq && eq != argv[i])
         {
-            node_t *n = netlist_find_node(nl, name);
-            if (n && n->type == NODE_INPUT)
+            size_t nlen = (size_t)(eq - argv[i]);
+            if (nlen < NAME_MAX)
             {
-                n->value = val & wmask(n->width);
+                char name[NAME_MAX];
+                memcpy(name, argv[i], nlen);
+                name[nlen] = '\0';
+                char *end = NULL;
+                long val = strtol(eq + 1, &end, 10);
+                if (end != eq + 1)
+                {
+                    node_t *n = netlist_find_node(nl, name);
+                    if (n && n->type == NODE_INPUT)
+                    {
+                        n->value = (int)val & wmask(n->width);
+                    }
+                }
             }
         }
     }
 
     /* Initialize: settle to establish initial combinational state */
-    eval_settle(nl, seen);
+    eval_settle(nl);
 
     /* After initialization, set prev_clock = current clock value for all DFFs
        so the FALLING edge is first detected, not rising.
@@ -452,7 +455,7 @@ void backend_sim(netlist_t *nl, int argc, char **argv)
         }
 
         /* Settle evaluation per cycle */
-        eval_settle(nl, seen);
+        eval_settle(nl);
 
         /* Dump after each cycle if requested */
         if (dump)
@@ -479,7 +482,6 @@ void backend_sim(netlist_t *nl, int argc, char **argv)
         }
     }
     printf("\n");
-    free(seen);
 }
 
 static void print_signal_name(node_t *n)
@@ -535,7 +537,6 @@ int backend_truth(netlist_t *nl)
     }
     printf("\n");
 
-    int *seen = calloc(nl->num_nodes, sizeof(int));
     int rows = 1 << total_bits;
     for (int r = 0; r < rows; r++)
     {
@@ -548,10 +549,9 @@ int backend_truth(netlist_t *nl)
             shift += inputs[i]->width;
         }
 
-        memset(seen, 0, nl->num_nodes * sizeof(int));
         for (int i = 0; i < nl->num_nodes; i++)
         {
-            eval_node(nl, nl->nodes[i], seen);
+            eval_node(nl, nl->nodes[i]);
         }
 
         for (int i = 0; i < num_in; i++)
@@ -568,6 +568,5 @@ int backend_truth(netlist_t *nl)
 
     free(inputs);
     free(outputs);
-    free(seen);
     return 0;
 }

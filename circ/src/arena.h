@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ARENA_BLOCK_SIZE (128 * 1024) /* 128KB per block */
+#define ARENA_BLOCK_SIZE ((size_t)128 * 1024) /* 128KB per block */
 
 typedef struct arena_block
 {

@@ -1,8 +1,0 @@
-module circuit (
-  input Cin,
-  output Cout
-);
-  wire NOT_0;
-  assign NOT_0 = ~Cin;
-  assign Cout = NOT_0;
-endmodule

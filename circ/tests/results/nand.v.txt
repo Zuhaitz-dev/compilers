@@ -1,9 +1,0 @@
-module circuit (
-  input A,
-  input B,
-  output Q
-);
-  wire NAND_0;
-  assign NAND_0 = ~(A & B);
-  assign Q = NAND_0;
-endmodule

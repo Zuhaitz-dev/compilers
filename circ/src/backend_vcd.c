@@ -16,22 +16,41 @@ void backend_vcd(netlist_t *nl, int argc, char **argv)
         {
             continue;
         }
-        if (sscanf(argv[i], "--cycles=%d", &cycles) == 1)
+        if (strncmp(argv[i], "--cycles=", 9) == 0 && argv[i][9] != '\0')
         {
-            continue;
-        }
-        if (sscanf(argv[i], "--clock=%63s", clock_port) == 1)
-        {
-            continue;
-        }
-        char name[NAME_MAX];
-        int val;
-        if (sscanf(argv[i], "%63[^=]=%d", name, &val) == 2)
-        {
-            node_t *n = netlist_find_node(nl, name);
-            if (n && n->type == NODE_INPUT)
+            char *end = NULL;
+            long v = strtol(argv[i] + 9, &end, 10);
+            if (end != argv[i] + 9)
             {
-                n->value = val & ((n->width >= 31) ? 0x7FFFFFFF : (1 << n->width) - 1);
+                cycles = (int)v;
+            }
+            continue;
+        }
+        if (strncmp(argv[i], "--clock=", 8) == 0)
+        {
+            strncpy(clock_port, argv[i] + 8, NAME_MAX - 1);
+            clock_port[NAME_MAX - 1] = '\0';
+            continue;
+        }
+        char *eq = strchr(argv[i], '=');
+        if (eq && eq != argv[i])
+        {
+            size_t nlen = (size_t)(eq - argv[i]);
+            if (nlen < NAME_MAX)
+            {
+                char name[NAME_MAX];
+                memcpy(name, argv[i], nlen);
+                name[nlen] = '\0';
+                char *end = NULL;
+                long val = strtol(eq + 1, &end, 10);
+                if (end != eq + 1)
+                {
+                    node_t *n = netlist_find_node(nl, name);
+                    if (n && n->type == NODE_INPUT)
+                    {
+                        n->value = (int)val & ((n->width >= 31) ? 0x7FFFFFFF : (1 << n->width) - 1);
+                    }
+                }
             }
         }
     }
@@ -105,8 +124,7 @@ void backend_vcd(netlist_t *nl, int argc, char **argv)
     printf("$end\n");
 
     /* Init eval */
-    int *seen = calloc(nl->num_nodes, sizeof(int));
-    eval_settle(nl, seen);
+    eval_settle(nl);
 
     /* Cycles */
     for (int cyc = 0; cyc < cycles; cyc++)
@@ -116,7 +134,7 @@ void backend_vcd(netlist_t *nl, int argc, char **argv)
             clock_node->value = !clock_node->value;
         }
 
-        eval_settle(nl, seen);
+        eval_settle(nl);
 
         printf("#%d\n", (cyc + 1) * 10);
         for (int i = 0; i < nl->num_nodes; i++)
@@ -132,5 +150,4 @@ void backend_vcd(netlist_t *nl, int argc, char **argv)
             printf("b%d CLK\n", clock_node->value);
         }
     }
-    free(seen);
 }
