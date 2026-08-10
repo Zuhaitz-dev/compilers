@@ -60,9 +60,18 @@ check_format:
 	fi
 
 lint:
+	@tmp=$$(mktemp); \
 	clang-tidy src/*.c -- -Wall -Wextra -Wpedantic -Werror -std=c99 \
-	    -Wno-format-truncation -O2 -DNDEBUG 2>&1 | \
-	    grep -v "warnings generated"
+	    -Wno-format-truncation -O2 -DNDEBUG > "$$tmp" 2>&1; \
+	status=$$?; \
+	if [ $$status -ne 0 ]; then \
+	    grep -v "warnings generated" "$$tmp" | head -40; \
+	    echo "FAIL: clang-tidy findings"; \
+	    rm -f "$$tmp"; \
+	    exit 1; \
+	fi; \
+	rm -f "$$tmp"; \
+	echo "LINT OK"
 
 BINDIR ?= /usr/local/bin
 install: $(TARGET)

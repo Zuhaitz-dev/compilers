@@ -115,6 +115,28 @@ clean:
 	@echo "**Clean Complete**"
 
 # =========================
+# Smoke test: assemble a few examples and check the simulator output
+# =========================
+.PHONY: smoke
+smoke: all
+	@echo "**Smoke tests**"
+	@errors=0; \
+	for ex in hello fizzbuzz; do \
+	    ./bin/pasm examples/$$ex.asm >/dev/null 2>&1 || { \
+	        printf "  FAIL %s (assembly)\n" "$$ex.asm"; errors=$$((errors + 1)); continue; }; \
+	    out=$$(./bin/pvm 2>&1); \
+	    expected=$$([ "$$ex" = hello ] && echo "Hello, world!" || echo "FizzBuzz"); \
+	    case "$$out" in \
+	        *"$$expected"*) printf "  OK   %s (SYS_WRITE)\n" "$$ex.asm";; \
+	        *) printf "  FAIL %s (missing '%s')\n" "$$ex.asm" "$$expected"; \
+	           printf "       got: %s\n" "$$out"; errors=$$((errors + 1));; \
+	    esac; \
+	done; \
+	rm -f a.out.bin pvm.log; \
+	if [ $$errors -eq 0 ]; then echo "**Smoke tests passed**"; \
+	else echo "**$$errors smoke test(s) failed**"; exit 1; fi
+
+# =========================
 # Format sources to the shared repository style
 # =========================
 .PHONY: format

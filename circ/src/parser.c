@@ -683,8 +683,9 @@ static void add_binding(node_t *node, int is_out, const char *name, node_t *exte
             }
             node->output_bindings = nb;
         }
-        strncpy(node->output_bindings[node->num_output_bindings].name, name,
-                63); // NOLINT: realloc guarded above
+        // NOLINTBEGIN: realloc guarded above
+        strncpy(node->output_bindings[node->num_output_bindings].name, name, 63);
+        // NOLINTEND
         node->output_bindings[node->num_output_bindings].external_node = external;
         node->num_output_bindings++;
     }
