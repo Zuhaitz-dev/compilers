@@ -3,28 +3,28 @@
 .PHONY: test format lint check_format clean
 
 test:
-	@echo "=== b-compiler-x64 ==="
-	@./b-compiler-x64/tests/run.sh
+	@echo "=== b-c-x64 ==="
+	@./b-c-x64/tests/run.sh
 	@echo "=== forth-nasm-x64 ==="
 	@./forth-nasm-x64/tests/run.sh
-	@echo "=== forth-c-x64_3ds (Linux target) ==="
-	@$(MAKE) -C forth-c-x64_3ds test
+	@echo "=== forth-c-x64-3ds (Linux target) ==="
+	@$(MAKE) -C forth-c-x64-3ds test
 	@echo "=== circ ==="
 	@$(MAKE) -C circ test
-	@echo "=== Pinnacle ==="
-	@$(MAKE) -C Pinnacle smoke
+	@echo "=== pinnacle-c-pinnacle ==="
+	@$(MAKE) -C pinnacle-c-pinnacle smoke
 	@echo "=== pascal-cpp-x64 ==="
 	@./pascal-cpp-x64/tests/run.sh
 
 format:
 	clang-format -i \
-	    b-compiler-x64/src/*.c \
-	    forth-c-x64_3ds/main.c forth-c-x64_3ds/include/*.h \
-	    forth-c-x64_3ds/src/core/*.c forth-c-x64_3ds/src/pal/*.c \
+	    b-c-x64/src/*.c \
+	    forth-c-x64-3ds/main.c forth-c-x64-3ds/include/*.h \
+	    forth-c-x64-3ds/src/core/*.c forth-c-x64-3ds/src/pal/*.c \
 	    circ/src/*.c circ/src/*.h \
-	    Pinnacle/assembler/*.c Pinnacle/common/*.c \
-	    Pinnacle/disassembler/*.c Pinnacle/simulator/*.c \
-	    Pinnacle/include/*.h \
+	    pinnacle-c-pinnacle/assembler/*.c pinnacle-c-pinnacle/common/*.c \
+	    pinnacle-c-pinnacle/disassembler/*.c pinnacle-c-pinnacle/simulator/*.c \
+	    pinnacle-c-pinnacle/include/*.h \
 	    pascal-cpp-x64/include/pascal/*/*.hpp \
 	    pascal-cpp-x64/src/*/*.cpp pascal-cpp-x64/src/*.cpp
 
@@ -35,9 +35,9 @@ check_format:
 	@./scripts/check-format.sh
 
 clean:
-	@$(MAKE) -C b-compiler-x64 clean
+	@$(MAKE) -C b-c-x64 clean
 	@$(MAKE) -C forth-nasm-x64 clean
-	@$(MAKE) -C forth-c-x64_3ds clean
+	@$(MAKE) -C forth-c-x64-3ds clean
 	@$(MAKE) -C circ clean
-	@$(MAKE) -C Pinnacle clean
+	@$(MAKE) -C pinnacle-c-pinnacle clean
 	@rm -rf pascal-cpp-x64/build

@@ -28,14 +28,14 @@ jobs:
       - name: Format check
         run: ./scripts/check-format.sh
 
-      - name: Test b-compiler-x64
-        run: ./b-compiler-x64/tests/run.sh
+      - name: Test b-c-x64
+        run: ./b-c-x64/tests/run.sh
 
       - name: Test forth-nasm-x64
         run: ./forth-nasm-x64/tests/run.sh
 
-      - name: Test forth-c-x64_3ds (Linux target)
-        working-directory: forth-c-x64_3ds
+      - name: Test forth-c-x64-3ds (Linux target)
+        working-directory: forth-c-x64-3ds
         run: |
           make CC=gcc-14
           make test
@@ -47,8 +47,8 @@ jobs:
           make lint
           make test
 
-      - name: Test Pinnacle
-        working-directory: Pinnacle
+      - name: Test pinnacle-c-pinnacle
+        working-directory: pinnacle-c-pinnacle
         run: make smoke
 
       - name: Test pascal-cpp-x64

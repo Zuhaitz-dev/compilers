@@ -1,5 +1,5 @@
 #!/bin/sh
-# Test script for b-compiler-x64.
+# Test script for b-c-x64.
 cd "$(dirname "$0")/.."
 
 check() {
@@ -90,4 +90,4 @@ EOF
 )"
 check argv "hello world " hello world
 
-echo "PASS: all b-compiler tests passed"
+echo "PASS: all b-c-x64 tests passed"

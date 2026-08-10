@@ -1,4 +1,4 @@
-\ Forth test suite for forth-c-x64_3ds
+\ Forth test suite for forth-c-x64-3ds
 \ Each test line must print exactly one -1 (pass) or 0 (fail)
 
 \ Clear the initial 30 left by the demo eval

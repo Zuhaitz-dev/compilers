@@ -6,7 +6,7 @@ cd "$(dirname "$0")/.."
 CLANG_FORMAT=${CLANG_FORMAT:-clang-format}
 
 files=$(git ls-files -- '*.c' '*.h' '*.cpp' '*.hpp' '*.cc' '*.hh' |
-    grep -E '^(b-compiler-x64|forth-c-x64_3ds|circ|Pinnacle|pascal-cpp-x64)/' || true)
+    grep -E '^(b-c-x64|forth-c-x64-3ds|circ|pinnacle-c-pinnacle|pascal-cpp-x64)/' || true)
 
 if [ -z "$files" ]; then
     echo "No C/C++ files found."
