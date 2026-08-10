@@ -1,0 +1,4 @@
+big
+odd
+in-range
+seven

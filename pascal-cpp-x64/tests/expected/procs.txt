@@ -1,0 +1,4 @@
+6
+12
+Hello, world
+score = 12
