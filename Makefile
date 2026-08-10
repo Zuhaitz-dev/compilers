@@ -13,6 +13,8 @@ test:
 	@$(MAKE) -C circ test
 	@echo "=== Pinnacle ==="
 	@$(MAKE) -C Pinnacle smoke
+	@echo "=== pascal-cpp-x64 ==="
+	@./pascal-cpp-x64/tests/run.sh
 
 format:
 	clang-format -i \
@@ -22,7 +24,9 @@ format:
 	    circ/src/*.c circ/src/*.h \
 	    Pinnacle/assembler/*.c Pinnacle/common/*.c \
 	    Pinnacle/disassembler/*.c Pinnacle/simulator/*.c \
-	    Pinnacle/include/*.h
+	    Pinnacle/include/*.h \
+	    pascal-cpp-x64/include/pascal/*/*.hpp \
+	    pascal-cpp-x64/src/*/*.cpp pascal-cpp-x64/src/*.cpp
 
 lint:
 	@$(MAKE) -C circ lint
@@ -36,3 +40,4 @@ clean:
 	@$(MAKE) -C forth-c-x64_3ds clean
 	@$(MAKE) -C circ clean
 	@$(MAKE) -C Pinnacle clean
+	@rm -rf pascal-cpp-x64/build

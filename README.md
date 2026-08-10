@@ -14,7 +14,7 @@ workflow keep them all consistent and continuously tested.
 | `forth-c-x64_3ds` | C23 direct-threaded Forth for Linux and Nintendo 3DS (libctru) | `make` | `make test` |
 | `circ` | ASCII-circuit compiler: `.circ` drawings to simulation, C, or Verilog | `make` | `make test` |
 | `Pinnacle` | Assembler + simulator + disassembler for a custom ISA | `make` | `make smoke` |
-| `pascal-cpp-x64` | Pascal compiler in C++23 (work in progress) | — | — |
+| `pascal-cpp-x64` | Pascal compiler in C++20/LLVM (integer, real, boolean, char, arrays, procedures, functions) | `cmake` | `./tests/run.sh` |
 
 Each project has its own `README.md` with details.
 

@@ -20,6 +20,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gcc-14 g++-14
           sudo pip install --break-system-packages clang-format==22.1.8 clang-tidy==22.1.8
+          wget -q https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 22
+          sudo apt-get install -y llvm-22-dev
 
       - name: Format check
         run: ./scripts/check-format.sh
@@ -46,3 +50,7 @@ jobs:
       - name: Test Pinnacle
         working-directory: Pinnacle
         run: make smoke
+
+      - name: Test pascal-cpp-x64
+        working-directory: pascal-cpp-x64
+        run: ./tests/run.sh

@@ -12,6 +12,7 @@ bc
 forth
 forth_linux
 circ/circ
+pascalc
 
 # Python
 __pycache__/
