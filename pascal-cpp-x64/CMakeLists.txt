@@ -10,7 +10,10 @@ find_package(LLVM REQUIRED CONFIG)
 message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
-include_directories(${LLVM_INCLUDE_DIRS} include)
+# LLVM headers are third-party: treat them as system includes so -Wall -Wextra
+# does not warn inside them. Our own headers stay on the normal path.
+include_directories(SYSTEM ${LLVM_INCLUDE_DIRS})
+include_directories(include)
 separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND "${LLVM_DEFINITIONS}")
 add_definitions(${LLVM_DEFINITIONS_LIST})
 
