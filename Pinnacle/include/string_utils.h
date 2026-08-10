@@ -9,7 +9,7 @@
 typedef struct
 {
     word_t count;
-    char   *str;
+    char *str;
 } string_t;
 
 word_t str_pack(const char *str, word_t start_address);

@@ -4,8 +4,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-
-
 // Global TRAP Dispatch Table definition.
 trap_handler_t TRAP_TABLE[256] = {0};
 
@@ -15,8 +13,6 @@ void trap_write_handler(void);
 void trap_exit_handler(void);
 void trap_open_handler(void);
 void trap_close_handler(void);
-
-
 
 // Syscall 0: read(fd, buf_offset, count);
 void trap_read_handler()
@@ -31,7 +27,8 @@ void trap_read_handler()
 
     if (max_count > MAX_STACK_READ_SIZE)
     {
-        fprintf(stderr, "Runtime Error: Read request of %u bytes exceeds maximum of %d\n", max_count, MAX_STACK_READ_SIZE);
+        fprintf(stderr, "Runtime Error: Read request of %u bytes exceeds maximum of %d\n",
+                max_count, MAX_STACK_READ_SIZE);
         CLOSE_LOG();
         exit(EXIT_FAILURE);
     }
@@ -51,8 +48,6 @@ void trap_read_handler()
     MEMORY[--REGS.SP] = (word_t)n;
 }
 
-
-
 // Syscall 1: write(fd, buf_offset, count);
 void trap_write_handler()
 {
@@ -63,12 +58,11 @@ void trap_write_handler()
     word_t fd = MEMORY[REGS.SP++];
 
     string_t write_str = str_unpack(buf_offset);
-    write((1 == fd ? STDOUT_FILENO : (2 == fd ? STDERR_FILENO : fd)), write_str.str, write_str.count);
+    write((1 == fd ? STDOUT_FILENO : (2 == fd ? STDERR_FILENO : fd)), write_str.str,
+          write_str.count);
     free(write_str.str);
     MEMORY[--REGS.SP] = write_str.count;
 }
-
-
 
 // Syscall 2: exit(status);
 void trap_exit_handler()
@@ -76,8 +70,6 @@ void trap_exit_handler()
     // The exitcode is stored at the Base Register.
     status = MEMORY[REGS.BR];
 }
-
-
 
 // Syscall 3: open(*path, flags, count);
 // Count is added as a way to actually unpack this.
@@ -105,8 +97,6 @@ void trap_open_handler()
     MEMORY[--REGS.SP] = (word_t)fd;
 }
 
-
-
 // Syscall 4: close(fd);
 void trap_close_handler()
 {
@@ -123,8 +113,6 @@ void trap_close_handler()
         exit(EXIT_FAILURE);
     }
 }
-
-
 
 // We have 256 options, could we expand this later if so? Yeah?
 void initialize_trap_table()

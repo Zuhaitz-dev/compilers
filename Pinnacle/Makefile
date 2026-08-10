@@ -115,6 +115,14 @@ clean:
 	@echo "**Clean Complete**"
 
 # =========================
+# Format sources to the shared repository style
+# =========================
+.PHONY: format
+format:
+	clang-format -i assembler/*.c common/*.c disassembler/*.c \
+	    simulator/*.c include/*.h
+
+# =========================
 # Usage notes:
 # make all        # Standard build
 # make release    # Optimized release build

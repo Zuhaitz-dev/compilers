@@ -5,10 +5,8 @@
 #include "instruction_handlers.h"
 #include "trap_handlers.h"
 #ifdef BENCHMARK
-#   include <time.h>
+#include <time.h>
 #endif
-
-
 
 // Global definition of memory and registers.
 word_t MEMORY[MEMORY_SIZE] = {0};
@@ -17,94 +15,93 @@ exitcode_t status;
 FILE *log_file = NULL;
 
 #ifdef BENCHMARK
-    static uint64_t instr_count = 0;
-    __clock_t time_spent;
+static uint64_t instr_count = 0;
+__clock_t time_spent;
 
-    static inline void log_time(clock_t start, FILE* log)
-    {
-        clock_t diff = clock() - start;
-        fprintf(log, "Speed calculated by clock(): %f\n", (float)diff / CLOCKS_PER_SEC);
-    }
+static inline void log_time(clock_t start, FILE *log)
+{
+    clock_t diff = clock() - start;
+    fprintf(log, "Speed calculated by clock(): %f\n", (float)diff / CLOCKS_PER_SEC);
+}
 #endif
-
-
 
 // Memory loading function.
 void load_memory(const char *filename)
 {
     FILE *f = fopen(filename, "rb");
-    
+
     // Always use protection.
     if (NULL == f)
     {
         perror("Error opening binary file");
         fprintf(stderr, "FATAL: Please ensure 'a.out.bin' exists and is accessible.\n");
-        exit(EXIT_FAILURE); 
+        exit(EXIT_FAILURE);
     }
 
     size_t words_read = fread(MEMORY, sizeof(word_t), MEMORY_SIZE, f);
 
     if (words_read > 0)
+    {
         printf("Loaded %zu words starting at 0x%04X.\n", words_read, CODE_START);
+    }
     else
+    {
         printf("Warning: Binary file loaded but appears empty lol.\n");
+    }
 
     fclose(f);
 }
 
-
-
 void run_simulator(int start_addr)
 {
-#   ifdef BENCHMARK
+#ifdef BENCHMARK
     struct timespec t_start, t_end;
     clock_gettime(CLOCK_MONOTONIC, &t_start);
-#   endif
+#endif
 
     REGS.PC = start_addr;
 
     printf("** Starting Simulator at 0x%04X **\n", start_addr);
 
     // **Computed goto dispatch table**
-    static void *dispatch_table[] = {
-        [OP_ILLEGAL]   = &&op_illegal,
-        [OP_ALU_LOGIC] = &&op_alu_logic,
-        [OP_STACK_OPS] = &&op_stack_ops,
-        [OP_BRANCH]    = &&op_branch,
-        [OP_LDI]       = &&op_ldi,
-        [OP_LOAD]      = &&op_load,
-        [OP_STORE]     = &&op_store,
-        [OP_JMP]       = &&op_jmp,
-        [OP_JAL]       = &&op_jal,
-        [OP_RET]       = &&op_ret,
-        [OP_TRAP]      = &&op_trap,
-        [OP_HALT]      = &&op_halt
-    };
+    static void *dispatch_table[] = {[OP_ILLEGAL] = &&op_illegal,
+                                     [OP_ALU_LOGIC] = &&op_alu_logic,
+                                     [OP_STACK_OPS] = &&op_stack_ops,
+                                     [OP_BRANCH] = &&op_branch,
+                                     [OP_LDI] = &&op_ldi,
+                                     [OP_LOAD] = &&op_load,
+                                     [OP_STORE] = &&op_store,
+                                     [OP_JMP] = &&op_jmp,
+                                     [OP_JAL] = &&op_jal,
+                                     [OP_RET] = &&op_ret,
+                                     [OP_TRAP] = &&op_trap,
+                                     [OP_HALT] = &&op_halt};
 
 fetch:
-#   ifdef BENCHMARK
+#ifdef BENCHMARK
     instr_count++;
-#   endif
+#endif
 
     Instruction current_instruction;
     current_instruction.raw = MEMORY[REGS.PC];
     word_t prev_pc = REGS.PC;
     REGS.PC++;
 
-#   ifndef HIDE_TRACE
-#   ifndef NO_LOG
-    fprintf(log_file,
-        "PC: 0x%04X, SP: 0x%04X, Instruction: 0x%04X (opcode: 0x%X, arg: 0x%X)\n",
-        prev_pc, REGS.SP, current_instruction.raw,
-        current_instruction.fields.opcode, current_instruction.fields.arg);
-#   endif
-#   endif
+#ifndef HIDE_TRACE
+#ifndef NO_LOG
+    fprintf(log_file, "PC: 0x%04X, SP: 0x%04X, Instruction: 0x%04X (opcode: 0x%X, arg: 0x%X)\n",
+            prev_pc, REGS.SP, current_instruction.raw, current_instruction.fields.opcode,
+            current_instruction.fields.arg);
+#endif
+#endif
 
     int opcode = current_instruction.fields.opcode;
-    int arg    = current_instruction.fields.arg;
+    int arg = current_instruction.fields.arg;
 
     if (__builtin_expect(opcode < OP_ILLEGAL || opcode > OP_HALT, 0))
+    {
         goto op_illegal;
+    }
 
     goto *dispatch_table[opcode];
 
@@ -180,18 +177,17 @@ op_trap:
         TRAP_TABLE[arg]();
         if (arg == 2) // special exit trap
         {
-#           ifdef BENCHMARK
-#           ifndef NO_LOG
+#ifdef BENCHMARK
+#ifndef NO_LOG
             clock_gettime(CLOCK_MONOTONIC, &t_end);
-            double elapsed = (t_end.tv_sec - t_start.tv_sec) +
-                             (t_end.tv_nsec - t_start.tv_nsec) / 1e9;
-            fprintf(log_file,
-                    "Instr: %llu, elapsed: %.9f s, IPS: %.2f M\n",
-                    (unsigned long long)instr_count,
-                    elapsed, instr_count / (elapsed * 1e6));
-#           endif
-#           endif
-            printf("\n** SYS_EXIT at 0x%04X with status %hhu (0x%04X) **\n", prev_pc, status, status);
+            double elapsed =
+                (t_end.tv_sec - t_start.tv_sec) + (t_end.tv_nsec - t_start.tv_nsec) / 1e9;
+            fprintf(log_file, "Instr: %llu, elapsed: %.9f s, IPS: %.2f M\n",
+                    (unsigned long long)instr_count, elapsed, instr_count / (elapsed * 1e6));
+#endif
+#endif
+            printf("\n** SYS_EXIT at 0x%04X with status %hhu (0x%04X) **\n", prev_pc, status,
+                   status);
             CLOSE_LOG();
             exit(status);
         }
@@ -206,23 +202,18 @@ op_trap:
 }
 
 op_halt:
-#   ifdef BENCHMARK
-#   ifndef NO_LOG
+#ifdef BENCHMARK
+#ifndef NO_LOG
     clock_gettime(CLOCK_MONOTONIC, &t_end);
-    double elapsed = (t_end.tv_sec - t_start.tv_sec) +
-                     (t_end.tv_nsec - t_start.tv_nsec) / 1e9;
-    fprintf(log_file,
-            "Instr: %llu, elapsed: %.9f s, IPS: %.2f M\n",
-            (unsigned long long)instr_count,
-            elapsed, instr_count / (elapsed * 1e6));
-#   endif
-#   endif
+    double elapsed = (t_end.tv_sec - t_start.tv_sec) + (t_end.tv_nsec - t_start.tv_nsec) / 1e9;
+    fprintf(log_file, "Instr: %llu, elapsed: %.9f s, IPS: %.2f M\n",
+            (unsigned long long)instr_count, elapsed, instr_count / (elapsed * 1e6));
+#endif
+#endif
     printf("\n** HALT at 0x%04X **\n", prev_pc);
     CLOSE_LOG();
     exit(EXIT_SUCCESS);
 }
-
-
 
 // The main program.
 int main(void)
@@ -236,9 +227,9 @@ int main(void)
 
     load_memory("a.out.bin");
 
-#   ifndef NO_LOG
-        log_file = fopen("pvm.log", "w");
-#   endif
+#ifndef NO_LOG
+    log_file = fopen("pvm.log", "w");
+#endif
 
     if (NULL == log_file)
     {

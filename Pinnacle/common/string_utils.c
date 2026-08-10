@@ -7,8 +7,6 @@
 __attribute__((weak)) FILE *log_file = NULL;
 #endif
 
-
-
 word_t str_pack(const char *str, word_t start_address)
 {
     size_t len = strlen(str);
@@ -22,22 +20,20 @@ word_t str_pack(const char *str, word_t start_address)
     {
         char c1 = str[i];
         char c2 = (i + 1 < len) ? str[i + 1] : 0;
-        
+
         word_t packed_word = ((word_t)c1 << 8) | (word_t)c2;
         MEMORY[start_address + words_written] = packed_word;
         words_written++;
     }
-    
+
     return words_written;
 }
-
-
 
 string_t str_unpack(word_t buf_offset)
 {
     word_t addr = REGS.BR + buf_offset;
     word_t count = MEMORY[addr]; // Read the length prefix.
-    
+
     char *tmp = malloc(count + 1);
     if (!tmp)
     {
@@ -54,11 +50,9 @@ string_t str_unpack(word_t buf_offset)
     }
     tmp[count] = '\0';
 
-    string_t res = { .str = tmp, .count = count };
+    string_t res = {.str = tmp, .count = count};
     return res;
 }
-
-
 
 void buf_pack(const char *buffer, word_t buf_offset, word_t count)
 {
@@ -72,8 +66,12 @@ void buf_pack(const char *buffer, word_t buf_offset, word_t count)
     {
         word_t idx = (i / 2) + 1;
         if (0 == i % 2)
+        {
             MEMORY[addr + idx] = (buffer[i] & 0xFF) << 8;
+        }
         else
+        {
             MEMORY[addr + idx] |= (buffer[i] & 0xFF);
+        }
     }
 }
