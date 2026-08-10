@@ -33,7 +33,6 @@ ifeq ($(PROFILE),1)
 endif
 
 .PHONY: all clean test format check_format lint install neg_test stress_test out_test cc_driver fuzz fuzz_asan cc_semantic v_semantic campaign
-
 all: $(TARGET)
 
 -include $(DEP)
@@ -70,15 +69,6 @@ install: $(TARGET)
 	install -d $(DESTDIR)$(BINDIR)
 	install -m 755 $(TARGET) $(DESTDIR)$(BINDIR)/$(TARGET)
 
-cc_test: $(TARGET)
-	@echo "=== C COMPILATION ==="
-	@for ex in and not nand half_adder chain full_adder multiport adder2; do \
-	    echo "  $$ex.circ"; \
-	    ./$(TARGET) --c examples/$$ex.circ 2>/dev/null | \
-	        $(CC) -c -x c - -o /tmp/circ_$$ex.o 2>&1 || exit 1; \
-	done
-	@echo "ALL C COMPILES OK"
-
 cc_driver: $(TARGET)
 	@echo "=== C DRIVER (--c --driver) ==="
 	@errors=0; \
@@ -98,18 +88,6 @@ cc_driver: $(TARGET)
 	done; \
 	if [ $$errors -eq 0 ]; then echo "ALL C DRIVER TESTS PASS"; \
 	else echo "$$errors C DRIVER TEST(S) FAILED"; exit 1; fi
-
-v_test: $(TARGET)
-	@echo "=== VERILOG COMPILATION ==="
-	@for ex in and not nand half_adder chain full_adder multiport \
-	          counter2 counter4 toggle dff dlatch jkff; do \
-	    printf "  %s: " "$$ex.circ"; \
-	    ./$(TARGET) --v examples/$$ex.circ 2>/dev/null > /tmp/vtest_$$ex.v && \
-	    iverilog -o /dev/null /tmp/vtest_$$ex.v 2>&1 | \
-	        grep -v "No top level\|warning" | grep -q . && \
-	        echo "FAIL" || echo "OK"; \
-	done
-	@echo "ALL V COMPILES OK"
 
 RESULTS_DIR = tests/results
 EXPECTED_DIR = tests/expected
@@ -217,7 +195,7 @@ fuzz_asan: clean
 	$(MAKE) SANITIZE=1
 	python3 tests/fuzz.py --iters=400
 
-test: $(TARGET) check_format cc_test test_vfrom neg_test stress_test out_test cc_driver
+test: $(TARGET) check_format test_vfrom neg_test stress_test out_test cc_driver
 	@echo "=== FUZZ SMOKE (short) ==="
 	python3 tests/fuzz.py --iters=150
 	@echo "=== SEMANTIC C ==="

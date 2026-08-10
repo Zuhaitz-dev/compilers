@@ -100,10 +100,19 @@ def test_one(file):
     if not comb:
         # Ripple clocks (a sequential gate clocked by a derived signal)
         # trigger spurious edges at iverilog's x-init; the sim and C agree,
-        # so skip those here.
+        # so those get a compile-only check here.
         posedge_signals = set(re.findall(r"always @\(posedge (\w+)", vv.stdout))
         if posedge_signals - set(n for n, _ in inputs):
-            return f"SKIP {file}: ripple clock (derived clk) — iverilog x-init"
+            with tempfile.TemporaryDirectory() as d:
+                with open(os.path.join(d, "gen.v"), "w") as f:
+                    f.write(vv.stdout)
+                build = subprocess.run(
+                    ["iverilog", "-o", os.path.join(d, "null"),
+                     os.path.join(d, "gen.v")],
+                    capture_output=True, text=True)
+            if build.returncode != 0:
+                return f"FAIL {file}: generated Verilog does not compile:\n{build.stderr}"
+            return None
     tb = gen_tb(inputs, outputs, 8, comb)
     with tempfile.TemporaryDirectory() as d:
         with open(os.path.join(d, "gen.v"), "w") as f:
